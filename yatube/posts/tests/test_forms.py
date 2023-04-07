@@ -1,16 +1,15 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
+
 from ..models import Group, Post
 
 User = get_user_model()
 
 
 class PostsFormsTests(TestCase):
-    def __init__(self, methodName: str = ...):
-        super().__init__(methodName)
-        self.author = None
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -27,9 +26,9 @@ class PostsFormsTests(TestCase):
         )
 
     def setUp(self):
-        self.user = self.__class__.user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.guest_client = Client()
 
     def test_create_post(self):
         """Валидная форма создает запись в create_post."""
@@ -43,6 +42,7 @@ class PostsFormsTests(TestCase):
             data=form_data,
             follow=True
         )
+
         self.assertRedirects(response,
                              reverse('posts:profile',
                                      kwargs={'username': self.user.username}))
@@ -50,6 +50,7 @@ class PostsFormsTests(TestCase):
         self.assertTrue(Post.objects.filter(text='Тестовый пост',
                                             author=self.user,
                                             group=self.group).exists())
+
 
     def test_edit_post(self):
         """Валидная форма изменяет запись в edit_post."""
