@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -51,7 +49,6 @@ class PostsFormsTests(TestCase):
                                             author=self.user,
                                             group=self.group).exists())
 
-
     def test_edit_post(self):
         """Валидная форма изменяет запись в edit_post."""
 
@@ -68,3 +65,32 @@ class PostsFormsTests(TestCase):
         self.assertRedirects(response, reverse('posts:post_detail', args=(1,)))
 
         self.assertNotEqual(modified_post.text, self.post_0.text)
+
+    def test_edit_post_invalid(self):
+        """Проверка на невалидные данные."""
+        form_data = {
+            'text': ' ',
+        }
+        self.authorized_client.post(
+            reverse('posts:post_edit', args=f'{self.post_0.id}'),
+            data=form_data,
+            follow=True)
+        self.assertFalse(Post.objects.filter(text='').exists())
+
+    def test_edit_post_guest(self):
+        """Проверка в create_post (для неавтор)."""
+        posts_count = Post.objects.count()
+
+        form_data = {
+            'text': 'Тестовый пост',
+            'group': self.group.id
+        }
+
+        self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertFalse(Post.objects.filter(text='Тестовый пост',
+                                             author=self.user,
+                                             group=self.group).exists())
