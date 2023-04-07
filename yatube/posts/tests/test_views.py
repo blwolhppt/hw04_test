@@ -38,29 +38,11 @@ class PostsViewTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-    def test_pages_uses_correct_template(self):
-        """URL-адрес использует соответствующий шаблон."""
-        templates_pages_names = {
-            reverse('posts:index'): 'posts/index.html',
-            reverse('posts:group_list',
-                    kwargs={'slug': self.group.slug}): 'posts/group_list.html',
-            reverse('posts:profile', kwargs={
-                'username': self.user.username}): 'posts/profile.html',
-            reverse('posts:post_detail', kwargs={
-                'post_id': self.post_0.id}): 'posts/post_detail.html',
-            reverse('posts:post_edit', kwargs={
-                'post_id': self.post_0.id}): 'posts/create_post.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
-        }
-
-        for reverse_name, template in templates_pages_names.items():
-            with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse_name)
-                self.assertTemplateUsed(response, template)
-
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
+        self.assertTemplateUsed(response, 'posts/index.html')
+        self.assertIn('page_obj', response.context)
         posts = response.context.get('page_obj').object_list
         expected = list(Post.objects.all())
         self.assertEqual(posts, expected)
@@ -69,7 +51,9 @@ class PostsViewTests(TestCase):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:group_list', kwargs={'slug': self.group.slug}))
-
+        self.assertTemplateUsed(response, 'posts/group_list.html')
+        self.assertIn('group', response.context)
+        self.assertIn('page_obj', response.context)
         posts = response.context.get('page_obj').object_list
         group = response.context.get('group')
         expected = list(Post.objects.filter(group_id=self.group.id))
@@ -81,7 +65,9 @@ class PostsViewTests(TestCase):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.user.username}))
-
+        self.assertTemplateUsed(response, 'posts/profile.html')
+        self.assertIn('author', response.context)
+        self.assertIn('page_obj', response.context)
         posts = response.context.get('page_obj').object_list
         author = response.context.get('author')
         expected = list(Post.objects.filter(author_id=self.user.id))
@@ -93,14 +79,15 @@ class PostsViewTests(TestCase):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post_0.id}))
-
+        self.assertTemplateUsed(response, 'posts/post_detail.html')
+        self.assertIn('user_post', response.context)
         post = response.context.get('user_post')
         self.assertEqual(post, self.post_0)
 
     def test_create_post_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
-
+        self.assertTemplateUsed(response, 'posts/create_post.html')
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField
@@ -115,7 +102,7 @@ class PostsViewTests(TestCase):
         """Шаблон edit_create сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_edit', kwargs={'post_id': self.post_0.id}))
-
+        self.assertTemplateUsed(response, 'posts/create_post.html')
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField
