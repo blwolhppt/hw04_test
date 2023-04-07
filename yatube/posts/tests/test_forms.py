@@ -2,8 +2,6 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 from ..models import Group, Post
-from django import forms
-from django.http.response import HttpResponse
 
 User = get_user_model()
 
@@ -53,7 +51,6 @@ class PostsFormsTests(TestCase):
                                             author=self.user,
                                             group=self.group).exists())
 
-
     def test_edit_post(self):
         """Валидная форма изменяет запись в edit_post."""
 
@@ -70,7 +67,3 @@ class PostsFormsTests(TestCase):
         self.assertRedirects(response, reverse('posts:post_detail', args=(1,)))
 
         self.assertNotEqual(modified_post.text, self.post_0.text)
-
-
-
-

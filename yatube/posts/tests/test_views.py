@@ -3,9 +3,9 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from ..models import Group, Post
 from django import forms
-from django.http.response import HttpResponse
 
 User = get_user_model()
+
 
 class PostsViewTests(TestCase):
     @classmethod
@@ -202,7 +202,6 @@ class PaginatorViewsTest(TestCase):
             group=cls.group,
         )
 
-
     def setUp(self):
         self.user = self.__class__.user
         self.authorized_client = Client()
@@ -213,7 +212,8 @@ class PaginatorViewsTest(TestCase):
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(len(response.context['page_obj']), 10)
 
-        response = self.authorized_client.get(reverse('posts:index')+'?page=2')
+        response = self.authorized_client.get(
+            reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']), 1)
 
     def test_group_list_page(self):
