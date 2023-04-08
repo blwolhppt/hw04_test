@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -8,7 +9,7 @@ AMOUNT_OF_POSTS = 10
 
 
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.select_related('group', 'author').all()
     paginator = Paginator(post_list, AMOUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -20,7 +21,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()
+    posts = group.posts.select_related('group', 'author')
     paginator = Paginator(posts, AMOUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -33,7 +34,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    user_posts = author.posts.all()
+    user_posts = author.posts.select_related('group', 'author')
     paginator = Paginator(user_posts, AMOUNT_OF_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -54,6 +55,7 @@ def post_detail(request, post_id):
     return render(request, 'posts/post_detail.html', context)
 
 
+@login_required
 def post_create(request):
     form = PostForm(request.POST or None)
     if form.is_valid():
@@ -70,12 +72,12 @@ def post_create(request):
     return render(request, 'posts/create_post.html', context)
 
 
+# @login_required
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post_id)
-    form = PostForm(request.POST or None, files=request.FILES or None,
-                    instance=post)
+    form = PostForm(request.POST or None, instance=post)
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id)

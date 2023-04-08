@@ -71,7 +71,7 @@ class PostsURLTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_redirect_guest_client(self):
-        """Проверка редиректов для guest_client"""
+        """Проверка редиректов для guest_client. """
         response = self.guest_client.get(
             f'/posts/{self.post.id}/edit', follow=True)
         self.assertRedirects(response, f"/posts/{self.post.id}/")
