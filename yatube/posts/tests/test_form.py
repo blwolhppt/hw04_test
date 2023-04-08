@@ -84,7 +84,7 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(
-            response, f"/auth/login/?next=/posts/{self.post_0.id}/edit"
+            response, f"/posts/{self.post_0.id}/"
         )
 
     def test_guest_cannot_create(self):
