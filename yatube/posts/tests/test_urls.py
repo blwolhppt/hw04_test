@@ -45,17 +45,14 @@ class PostsURLTests(TestCase):
                 response = self.guest_client.get(address)
                 self.assertTemplateUsed(response, template)
 
-    def test_urls_uses_correct_template_auth(self):
-        """Проверка create_post для авторизованного
-        (и редирект для edit_post)"""
-        templates_url_names = {
-            '/create/': 'posts/create_post.html',
-        }
-        for address, template in templates_url_names.items():
-            with self.subTest(address=address):
-                response = self.random_client.get(address)
-                self.assertTemplateUsed(response, template)
+    def test_create_post_correct_template_auth(self):
+        """Проверка create_post для авторизованного"""
 
+        response = self.random_client.get('/create/')
+        self.assertTemplateUsed(response, 'posts/create_post.html')
+
+    def test_redirect_edit_post_auth(self):
+        """Проверка редирект для edit_post"""
         response = self.random_client.get(
             f'/posts/{self.post.id}/edit', follow=True)
         self.assertRedirects(response, f"/posts/{self.post.id}/")
@@ -70,11 +67,13 @@ class PostsURLTests(TestCase):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
 
-    def test_redirect_guest_client(self):
+    def test_redirect_edit_post_guest_client(self):
         """Проверка редиректов для guest_client. """
         response = self.guest_client.get(
             f'/posts/{self.post.id}/edit', follow=True)
         self.assertRedirects(response, f"/posts/{self.post.id}/")
 
+    def test_redirect_create_post_guest_client(self):
+        """Проверка редиректов для guest_client. """
         response = self.guest_client.get('/create/', follow=True)
         self.assertRedirects(response, "/auth/login/?next=/create/")
