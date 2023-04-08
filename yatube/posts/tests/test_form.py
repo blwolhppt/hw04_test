@@ -101,4 +101,3 @@ class PostFormTests(TestCase):
         self.assertRedirects(
             response, "/auth/login/?next=/create/"
         )
-
