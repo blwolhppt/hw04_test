@@ -59,13 +59,8 @@ class PostsURLTests(TestCase):
 
     def test_urls_uses_correct_template_author(self):
         """Проверка edit_post для автора. """
-        templates_url_names = {
-            f'/posts/{self.post.id}/edit': 'posts/create_post.html'
-        }
-        for address, template in templates_url_names.items():
-            with self.subTest(address=address):
-                response = self.authorized_client.get(address)
-                self.assertTemplateUsed(response, template)
+        response = self.authorized_client.get(f'/posts/{self.post.id}/edit')
+        self.assertTemplateUsed(response, 'posts/create_post.html')
 
     def test_redirect_edit_post_guest_client(self):
         """Проверка редиректов для guest_client. """
