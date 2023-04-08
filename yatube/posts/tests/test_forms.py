@@ -11,6 +11,7 @@ class PostsFormsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.guest_client = Client()
         cls.user = User.objects.create_user(username='test_user')
         cls.group = Group.objects.create(
             title='Тестовая группа',
@@ -26,7 +27,7 @@ class PostsFormsTests(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.guest_client = Client()
+
 
     def test_create_post(self):
         """Валидная форма создает запись в create_post."""
@@ -49,19 +50,21 @@ class PostsFormsTests(TestCase):
                                             author=self.user,
                                             group=self.group).exists())
 
-    #def test_create_post_guest(self):
-    #    """Проверка в create_post (для неавтор)."""
-    #    form_data = {
-    #        'text': 'Тестовый пост (guest)',
-    #        'group': self.group.id,
-    #    }
-    #    self.guest_client.post(
-    #        reverse('posts:post_create'),
-    #        data=form_data,
-    #        follow=True,
-    #    )
-    #    self.assertFalse(
-    #        Post.objects.filter(text='Тестовый пост (guest)').exists())
+    def test_create_post_guest(self):
+        """Проверка в create_post (для неавтор)."""
+
+        form_data = {
+            'text': 'Тестовый пост (guest)',
+            'group': self.group.id,
+        }
+        self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+
+        self.assertFalse(Post.objects.filter(
+            text='Тестовый пост (guest)').exists())
 
     def test_edit_post(self):
         """Валидная форма изменяет запись в edit_post."""
