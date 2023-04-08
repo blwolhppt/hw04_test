@@ -73,7 +73,7 @@ class PostFormTests(TestCase):
         self.assertFalse(Post.objects.filter(text='').exists())
 
     def test_guest_cannot_edit_post(self):
-        """Валидная форма не изменит запись в Post если неавторизован."""
+        """Проверка edit_post для guest_client."""
         form_data = {
             "text": "Тестовый пост(guest)",
             "group": self.group.id
@@ -84,13 +84,13 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(
-            response, f"/auth/login/?next=/posts/{self.post.id}/edit/"
+            response, f"/auth/login/?next=/posts/{self.post_0.id}/edit"
         )
 
     def test_guest_cannot_create(self):
-        """Валидная форма не создаст запись в Post если неавторизован."""
+        """Проверка create_post для guest_client."""
         form_data = {
-            "text": "Тестовый пост",
+            "text": "Тестовый пост (guest)",
             "group": self.group.id
         }
         response = self.guest_client.post(
