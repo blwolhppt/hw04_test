@@ -1,30 +1,27 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post
-
-User = get_user_model()
+from ..models import Post, Group, User
 
 
-class PostsFormsTests(TestCase):
+class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.guest_client = Client()
-        cls.user = User.objects.create_user(username='test_user')
+        cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
-            slug='test_slug',
-            description='description',
+            slug='test-slug',
+            description='Тестовое описание'
         )
         cls.post_0 = Post.objects.create(
             author=cls.user,
             text='Тестовый пост',
-            group=cls.group,
+            group=cls.group
         )
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -49,27 +46,8 @@ class PostsFormsTests(TestCase):
                                             author=self.user,
                                             group=self.group).exists())
 
-    def test_create_post_guest(self):
-        """Проверка в create_post (для неавтор)."""
-
-        form_data = {
-            'text': 'Тестовый пост (guest)',
-            'group': self.group.id,
-        }
-
-        self.guest_client.post(
-            reverse('posts:post_edit', kwargs={
-                'post_id': self.post_0.id}),
-            data=form_data,
-            follow=True
-        )
-
-        self.assertFalse(Post.objects.filter(
-            text='Тестовый пост (guest)').exists())
-
     def test_edit_post(self):
         """Валидная форма изменяет запись в edit_post."""
-
         form_data = {
             'text': 'Новый Тестовый пост',
             'group': self.group.id
@@ -81,7 +59,6 @@ class PostsFormsTests(TestCase):
             follow=True)
         modified_post = Post.objects.get(id=self.post_0.id)
         self.assertRedirects(response, reverse('posts:post_detail', args=(1,)))
-
         self.assertNotEqual(modified_post.text, self.post_0.text)
 
     def test_edit_post_invalid(self):
@@ -94,3 +71,34 @@ class PostsFormsTests(TestCase):
             data=form_data,
             follow=True)
         self.assertFalse(Post.objects.filter(text='').exists())
+
+    def test_guest_cannot_edit_post(self):
+        """Валидная форма не изменит запись в Post если неавторизован."""
+        form_data = {
+            "text": "Тестовый пост(guest)",
+            "group": self.group.id
+        }
+        response = self.guest_client.post(
+            reverse("posts:post_edit", kwargs=({"post_id": self.post_0.id})),
+            data=form_data,
+            follow=True,
+        )
+        self.assertRedirects(
+            response, f"/auth/login/?next=/posts/{self.post.id}/edit/"
+        )
+
+    def test_guest_cannot_create(self):
+        """Валидная форма не создаст запись в Post если неавторизован."""
+        form_data = {
+            "text": "Тестовый пост",
+            "group": self.group.id
+        }
+        response = self.guest_client.post(
+            reverse("posts:post_create"),
+            data=form_data,
+            follow=True,
+        )
+        self.assertRedirects(
+            response, "/auth/login/?next=/create/"
+        )
+
