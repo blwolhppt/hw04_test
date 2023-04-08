@@ -28,7 +28,6 @@ class PostsFormsTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-
     def test_create_post(self):
         """Валидная форма создает запись в create_post."""
 
@@ -57,8 +56,10 @@ class PostsFormsTests(TestCase):
             'text': 'Тестовый пост (guest)',
             'group': self.group.id,
         }
+
         self.guest_client.post(
-            reverse('posts:post_create'),
+            reverse('posts:post_edit', kwargs={
+                'post_id': self.post_0.id}),
             data=form_data,
             follow=True
         )
