@@ -36,5 +36,11 @@ class Post(models.Model):
         help_text='Выберите группу'
     )
 
+    image = models.ImageField(
+        'Картинка',
+        upload_to='posts/',
+        blank=True
+    )
+
     class Meta:
         ordering = ['-pub_date']
