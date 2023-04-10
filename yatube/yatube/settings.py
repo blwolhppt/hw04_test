@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&(w^8qzti490_ua!9g(v(3d+ej6mzou@qky9#6z3#+)-@b2u&c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -106,6 +106,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
