@@ -132,6 +132,11 @@ class PostsViewTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
+    def test_comment_post_show_correct_context(self):
+        """ Добавляется коммент."""
+        response = self.authorized_client.get(
+            reverse('posts:add_comment', kwargs={'post_id': self.post_0.id}))
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
