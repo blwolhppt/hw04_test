@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -19,11 +20,28 @@ class PostsViewTests(TestCase):
             slug='test_slug',
             description='description',
         )
+
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+
+        cls.uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
+
         cls.post_0 = Post.objects.create(
             id=0,
             author=cls.user,
             text='Тестовый пост 0',
             group=cls.group,
+            image=cls.uploaded,
         )
 
         cls.post_1 = Post.objects.create(
@@ -90,7 +108,8 @@ class PostsViewTests(TestCase):
         self.assertTemplateUsed(response, 'posts/create_post.html')
         form_fields = {
             'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
+            'group': forms.fields.ChoiceField,
+            'image': forms.fields.ImageField,
         }
 
         for value, expected in form_fields.items():
@@ -105,7 +124,8 @@ class PostsViewTests(TestCase):
         self.assertTemplateUsed(response, 'posts/create_post.html')
         form_fields = {
             'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
+            'group': forms.fields.ChoiceField,
+            'image': forms.fields.ImageField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
