@@ -4,6 +4,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import PostForm, CommentForm
 from .models import Post, Group, User, Comment
+from django.views.decorators.cache import cache_page
+
 
 AMOUNT_OF_POSTS = 10
 
@@ -95,7 +97,6 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    # Получите пост и сохраните его в переменную post.
     post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -104,3 +105,5 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id)
+
+
