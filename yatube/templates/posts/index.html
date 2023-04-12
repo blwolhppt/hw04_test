@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Последние обновления на сайте{% endblock %}
 {% block header %}Последние обновления на сайте{% endblock %}
+{% load cache %}
 {% block content %}
+{% cache 20 page_obj.number %}
 {% load thumbnail %}
 {% for post in page_obj %}
   <ul>
@@ -24,4 +26,5 @@
 
 {% endfor %}
 {% include 'posts/paginator.html' %}
+{% endcache %}
 {% endblock %}

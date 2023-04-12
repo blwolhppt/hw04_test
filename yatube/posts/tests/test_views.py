@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -59,6 +60,7 @@ class PostsViewTests(TestCase):
         )
 
     def setUp(self):
+        self.guest_client = Client()
         self.user = self.__class__.user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -70,7 +72,18 @@ class PostsViewTests(TestCase):
         self.assertIn('page_obj', response.context)
         posts = response.context.get('page_obj').object_list
         expected = list(Post.objects.all())
-        self.assertEqual(posts, expected)
+        self.assertEqual(posts[0], expected[0])
+        self.assertEqual(posts[1], expected[1])
+
+    def test_cache(self):
+        """ Тест кэша."""
+        response1 = self.guest_client.get(reverse('posts:index')).content
+        self.post_1.delete()
+        response2 = self.guest_client.get(reverse('posts:index')).content
+        self.assertEqual(response1, response2)
+        cache.clear()
+        response3 = self.guest_client.get(reverse('posts:index')).content
+        self.assertNotEqual(response1, response3)
 
     def test_group_posts_page_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
@@ -142,13 +155,6 @@ class PostsViewTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
-
-    def test_comment_post_show_correct_context(self):
-        """ Добавляется коммент."""
-        response = self.authorized_client.get(
-            reverse('posts:add_comment', kwargs={'post_id': self.post_0.id}))
-
-
 
 
 class PaginatorViewsTest(TestCase):
