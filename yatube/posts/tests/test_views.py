@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from ..models import Group, Post
+from ..models import Group, Post, Comment
 from ..views import AMOUNT_OF_POSTS
 
 User = get_user_model()
@@ -49,6 +49,13 @@ class PostsViewTests(TestCase):
             author=cls.user,
             text='Тестовый пост 1',
             group=None,
+        )
+
+        cls.comment_0 = Comment.objects.create(
+            post=cls.post_0,
+            author=cls.user,
+            text='Комментарий под постом post_0'
+
         )
 
     def setUp(self):
@@ -97,10 +104,14 @@ class PostsViewTests(TestCase):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post_0.id}))
+
         self.assertTemplateUsed(response, 'posts/post_detail.html')
         self.assertIn('user_post', response.context)
+        self.assertIn('all_comments', response.context)
         post = response.context.get('user_post')
+        comment = response.context['all_comments'][0]
         self.assertEqual(post, self.post_0)
+        self.assertEqual(comment, self.comment_0)
 
     def test_create_post_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
@@ -136,6 +147,8 @@ class PostsViewTests(TestCase):
         """ Добавляется коммент."""
         response = self.authorized_client.get(
             reverse('posts:add_comment', kwargs={'post_id': self.post_0.id}))
+
+
 
 
 class PaginatorViewsTest(TestCase):

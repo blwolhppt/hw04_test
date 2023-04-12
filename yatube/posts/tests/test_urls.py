@@ -47,7 +47,6 @@ class PostsURLTests(TestCase):
 
     def test_create_post_correct_template_auth(self):
         """Проверка create_post для авторизованного"""
-
         response = self.random_client.get('/create/')
         self.assertTemplateUsed(response, 'posts/create_post.html')
 
@@ -72,3 +71,4 @@ class PostsURLTests(TestCase):
         """Проверка редиректов для guest_client. """
         response = self.guest_client.get('/create/', follow=True)
         self.assertRedirects(response, "/auth/login/?next=/create/")
+

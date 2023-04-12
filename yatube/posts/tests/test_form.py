@@ -81,7 +81,6 @@ class PostFormTests(TestCase):
                              reverse('posts:profile',
                                      kwargs={'username': self.user.username}))
         #print(form_data)
-
         self.assertTrue(Post.objects.filter(text='Тестовый пост(картинка)',
                                             author=self.user,
                                             group=self.group).exists())
