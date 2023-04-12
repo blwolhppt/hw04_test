@@ -156,6 +156,12 @@ class PostsViewTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
+    def test_404(self):
+        """Проверка ошибки 404."""
+        response = self.guest_client.get('/nonexist-page/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, 'core/404.html')
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
