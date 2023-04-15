@@ -5,6 +5,7 @@
 {% block content %}
 {% cache 20 page_obj.number %}
 {% load thumbnail %}
+{% include 'includes/switcher.html' %}
 {% for post in page_obj %}
   <ul>
     <li>

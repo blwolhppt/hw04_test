@@ -3,9 +3,8 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import PostForm, CommentForm
-from .models import Post, Group, User, Comment
+from .models import Post, Group, User, Comment, Follow
 from django.views.decorators.cache import cache_page
-
 
 AMOUNT_OF_POSTS = 10
 
@@ -63,7 +62,7 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None,  files=request.FILES or None)
+    form = PostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
@@ -106,19 +105,34 @@ def add_comment(request, post_id):
         comment.save()
     return redirect('posts:post_detail', post_id)
 
+
 @login_required
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
-    # ...
-    context = {}
+    follow = Follow.objects.filter(user=request.user).values_list(
+        "author_id", flat=True
+    )
+    post_list = Post.objects.filter(author_id__in=follow)
+    paginator = Paginator(post_list, AMOUNT_OF_POSTS)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj': page_obj,
+    }
     return render(request, 'posts/follow.html', context)
+
 
 @login_required
 def profile_follow(request, username):
-    # Подписаться на автора
-    ...
+    author = get_object_or_404(User, username=username)
+    if author != request.user and (not Follow.objects.filter(
+            user=request.user, author=author).exists()):
+        Follow.objects.create(user=request.user, author=author)
+    return redirect("posts:index")
+
 
 @login_required
 def profile_unfollow(request, username):
-    # Дизлайк, отписка
-    ...
+    author = get_object_or_404(User, username=username)
+    Follow.objects.filter(user=request.user, author=author).delete()
+    return redirect("posts:index")
